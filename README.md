@@ -23,7 +23,8 @@
 
 ### 远程屏幕监控系统
 
-[远程屏幕监控系统 源码](https://github.com/zfman/design/tree/master/%E8%BF%9C%E7%A8%8B%E5%B1%8F%E5%B9%95%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F)是一个服务端到客户端的屏幕监控系统，服务端可以监控多个客户端的桌面，在服务端以树形的形式列出已连接上的客户端IP地址，点击客户端IP地址后即可在右侧监控该客户端的屏幕
+[远程屏幕监控系统](https://github.com/zfman/design/tree/master/%E8%BF%9C%E7%A8%8B%E5%B1%8F%E5%B9%95%E7%9B%91%E6%8E%A7%E7%B3%BB%E7%BB%9F)是一个服务端到客户端的屏幕监控系统，服务端可以监控多个客户端的桌面，在服务端以树形的形式列出已连接上的客户端IP地址，点击客户端IP地址后即可在右侧监控该客户端的屏幕
+
 具体原理可以参见[原理篇](https://blog.csdn.net/lzhuangfei/article/details/80294705)
 
 你可以学到：
