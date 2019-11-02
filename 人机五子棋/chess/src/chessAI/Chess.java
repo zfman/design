@@ -73,6 +73,7 @@ public class Chess {
 		//非空判断，0为空位
 		if (chess[x][y] != 0)
 			return false;
+		
 		//校验通过，落子
 		chess[x][y] = player;
 		return true;
@@ -146,8 +147,21 @@ public class Chess {
 		}
 		
 		//从最高分集合中随机抽取一个位置
+		
+		boolean banFlag = true;
 		Location pos = allMaxLocation.get((int) (Math.random() * allMaxLocation.size()));
-
+		while ((banFlag) && (first == PLAYER)){
+			boolean flag_forbidden = forbiddenHand(pos.getX(),pos.getY(),PLAYER);
+				if (flag_forbidden) {
+					pos = allMaxLocation.get((int) (Math.random() * allMaxLocation.size()));
+					System.out.println("机器禁手出现");
+				}else{
+					banFlag = false;	
+				}
+			}
+		
+		
+		
 		System.out.println("机器落子:行：" + (pos.getX() + 1) + " 列:" + (pos.getY() + 1));
 		
 		//返回分析的位置
@@ -189,6 +203,87 @@ public class Chess {
 		return allMayLocation;
 	}
 
+	/**
+	 * 判断禁手规则，三三禁手，四四禁手，长连禁手
+	 */
+	public boolean forbiddenHand(int x, int y, int cur) {
+		int threeBan = 0;
+		int fourBan = 0;
+		int longBan = 0;
+		//三三禁手
+		if ((chess[x][y-1] == cur && chess[x][y+1] == cur && chess[x][y-2] == 0 && chess[x][y+2] == 0) || (chess[x][y-2] == cur && chess[x][y-1] == cur && chess[x][y-3] == 0 && chess[x][y+1] == 0) || (chess[x][y+1] == cur && chess[x][y+2] == cur && chess[x][y-1] == 0 && chess[x][y+3] == 0)) {
+			threeBan++;
+		}
+		if ((chess[x-1][y] == cur && chess[x+1][y] == cur && chess[x-2][y] == 0 && chess[x+2][y] == 0) || (chess[x-2][y] == cur && chess[x-1][y]== cur && chess[x-3][y] == 0 && chess[x+1][y] == 0) || (chess[x+1][y] == cur && chess[x+2][y] == cur && chess[x-1][y] == 0 && chess[x+3][y] == 0)) {
+			threeBan++;
+		}
+		if ((chess[x-1][y-1] == cur && chess[x+1][y+1] == cur && chess[x-2][y-2] == 0 && chess[x+2][y+2] == 0) || (chess[x+1][y+1] == cur && chess[x+2][y+2] == cur) || (chess[x-2][y-2] == cur && chess[x-1][y-1] == cur)) {
+			threeBan++;
+		}
+		if ((chess[x-1][y+1] == cur && chess[x+1][y-1] == cur && chess[x-2][y+2] == 0 && chess[x+2][y-2] == 0) || (chess[x-2][y+2] == cur && chess[x-1][y+1] == cur && chess[x-3][y+3] == 0 && chess[x+1][y-1] == 0) || (chess[x+1][y-1] == cur && chess[x+2][y-2] == cur && chess[x-1][y+1] == 0 && chess[x+3][y-3] == 0)) {
+			threeBan++;
+		}
+		if ((chess[x][y-1] == 0 && chess[x][y-2] == cur && chess[x][y+1] == cur && chess[x][y-3] == 0 && chess[x][y+2] == 0) ||(chess[x][y+1] == 0 && chess[x][y+2] == cur && chess[x][y+3] == cur  && chess[x][y-1] == 0 && chess[x][y+4] == 0) || (chess[x][y-1] == cur && chess[x][y-2] == 0 && chess[x][y-3] == cur && chess[x][y+1] == 0 && chess[x][y-4] == 0)) {
+			threeBan++;
+		}
+		if ((chess[x][y-1] == cur && chess[x][y+1] == 0 && chess[x][y+2] == cur && chess[x][y-2] == 0 && chess[x][y+3] == 0) ||(chess[x][y+1] == cur && chess[x][y+2] == 0 && chess[x][y+3] == cur && chess[x][y-1] == 0 && chess[x][y+4] == 0) || (chess[x][y-1] == 0 && chess[x][y-2] == cur && chess[x][y-3] == cur && chess[x][y-4] == 0 && chess[x][y+1] == 0)) {
+			threeBan++;
+		}
+		if ((chess[x-1][y] == 0 && chess[x-2][y] == cur && chess[x+1][y] == cur && chess[x-3][y] == 0 && chess[x+2][y] == 0) || (chess[x+1][y] == 0 && chess[x+2][y] == cur && chess[x+3][y] == cur && chess[x-1][y] == 0 && chess[x+4][y] == 0) || (chess[x-3][y] == cur && chess[x-2][y] == 0 && chess[x-1][y] == cur && chess[x-4][y] == 0 && chess[x+1][y] == 0)) {
+			threeBan++;
+		}
+		if ((chess[x-1][y] == cur && chess[x+1][y] == 0 && chess[x+2][y] == cur && chess[x-2][y] == 0 && chess[x+3][y] == 0) || (chess[x+1][y] == cur && chess[x+2][y] == 0 && chess[x+3][y] == cur && chess[x-1][y] == 0 && chess[x+4][y] == 0) || (chess[x-1][y] == 0 && chess[x-2][y] == cur && chess[x-3][y] == cur && chess[x-4][y] == 0 && chess[x+1][y] == 0)) {
+			threeBan++;
+		}
+		if ((chess[x-1][y-1] == 0 && chess[x-2][y-2] == cur && chess[x+1][y+1] == cur && chess[x-3][y-3] == 0 && chess[x+2][y+2] == 0) || (chess[x+1][y+1] == 0 && chess[x+2][y+2] == cur && chess[x+3][y+3]== cur && chess[x-1][y-1] == 0 && chess[x+4][y+4] == 0) || (chess[x-1][y-1] == cur && chess[x-2][y-2] == 0 && chess[x-3][y-3] == cur && chess[x+1][y+1] == 0 && chess[x-4][y-4] == 0)) {
+			threeBan++;
+		}
+		if ((chess[x-1][y-1] == cur && chess[x+1][y+1] == 0 && chess[x-2][y-2] == cur && chess[x+2][y+2] == 0 && chess[x-3][y-3]== 0)||(chess[x+1][y+1] == cur && chess[x+2][y+2] == 0 && chess[x+3][y+3] == cur && chess[x-1][y-1] == 0 && chess[x+4][y+4] == 0) || (chess[x-1][y-1] == 0 && chess[x-2][y-2] == cur && chess[x-3][y-3] == cur && chess[x+1][y+1] == 0 && chess[x-4][y-4] == 0)) {
+			threeBan++;
+		}
+		if ((chess[x-1][y+1] == 0 && chess[x-2][y+2] == cur && chess[x+1][y-1] == cur && chess[x-3][y+3] == 0 && chess[x+2][y-2] == 0) || (chess[x+1][y-1] == 0 && chess[x+2][y-2] == cur && chess[x+3][y-3]== cur && chess[x-1][y+1] == 0 && chess[x+4][y-4] == 0) || (chess[x-1][y+1] == cur && chess[x-2][y+2] == 0 && chess[x-3][y+3] == cur && chess[x+1][y-1] == 0 && chess[x-4][y+4] == 0)) {
+			threeBan++;
+		}
+		if ((chess[x-1][y+1] == cur && chess[x+1][y-1] == 0 && chess[x-2][y+2] == cur && chess[x+2][y-2] == 0 && chess[x-3][y+3]== 0)||(chess[x+1][y-1] == cur && chess[x+2][y-2] == 0 && chess[x+3][y-3] == cur && chess[x-1][y+1] == 0 && chess[x+4][y-4] == 0) || (chess[x-1][y+1] == 0 && chess[x-2][y+2] == cur && chess[x-3][y+3] == cur && chess[x+1][y-1] == 0 && chess[x-4][y+4] == 0)) {
+			threeBan++;
+		}
+		//四四禁手
+		if ((chess[x+1][y] == cur && chess[x+2][y] == cur && chess[x+3][y] == cur && chess[x-1][y] == 0 && chess[x+4][y] == 0)|| (chess[x-1][y] == cur && chess[x+1][y] == cur && chess[x+2][y] == cur && chess[x-2][y] == 0 && chess[x+3][y] == 0) ||(chess[x-2][y] == cur && chess[x-1][y] == cur && chess[x+1][y] == cur && chess[x-3][y] == 0 && chess[x+2][y] == 0) ||  (chess[x-3][y] == cur && chess[x-2][y] == cur && chess[x-1][y] == cur && chess[x-4][y] == 0 && chess[x+1][y] == 0)) {
+			fourBan++;
+		}
+		if ((chess[x][y+1] == cur && chess[x][y+2] == cur && chess[x][y+3] == cur && chess[x][y-1] == 0 && chess[x][y+4] == 0)|| (chess[x][y-1] == cur && chess[x][y+1] == cur && chess[x][y+2] == cur && chess[x][y-2] == 0 && chess[x][y+3] == 0) ||(chess[x][y-2] == cur && chess[x][y-1] == cur && chess[x][y+1] == cur && chess[x][y-3] == 0 && chess[x][y+2] == 0) ||  (chess[x][y-3] == cur && chess[x][y-2] == cur && chess[x][y-1] == cur && chess[x][y-4] == 0 && chess[x][y+1] == 0)) {
+			fourBan++;
+		}
+		if ((chess[x+1][y+1] == cur && chess[x+2][y+2] == cur && chess[x+3][y+3] == cur && chess[x-1][y-1] == 0 && chess[x+4][y+4] == 0)|| (chess[x-1][y-1] == cur && chess[x+1][y+1] == cur && chess[x+2][y+2] == cur && chess[x-2][y-2] == 0 && chess[x+3][y+3] == 0) ||(chess[x-2][y-2] == cur && chess[x-1][y-1] == cur && chess[x+1][y+1] == cur && chess[x-3][y-3] == 0 && chess[x+2][y+2] == 0) ||  (chess[x-3][y-3] == cur && chess[x-2][y-2] == cur && chess[x-1][y-1] == cur && chess[x-4][y-4] == 0 && chess[x+1][y+1] == 0)) {
+			fourBan++;
+		}
+		if ((chess[x+1][y-1] == cur && chess[x+2][y-2] == cur && chess[x+3][y-3] == cur && chess[x-1][y+1] == 0 && chess[x+4][y-4] == 0)|| (chess[x-1][y+1] == cur && chess[x+1][y-1] == cur && chess[x+2][y-2] == cur && chess[x-2][y+2] == 0 && chess[x+3][y-3] == 0) ||(chess[x-2][y+2] == cur && chess[x-1][y+1] == cur && chess[x+1][y-1] == cur && chess[x-3][y+3] == 0 && chess[x+2][y-2] == 0) ||  (chess[x-3][y+3] == cur && chess[x-2][y+2] == cur && chess[x-1][y+1] == cur && chess[x-4][y+4] == 0 && chess[x+1][y-1] == 0)) {
+			fourBan++;
+		}
+		//长连禁手
+		if ((chess[x+1][y] == cur && chess[x+2][y] == cur && chess[x+3][y] == cur && chess[x-1][y] == cur && chess[x+4][y] == cur)|| (chess[x-1][y] == cur && chess[x+1][y] == cur && chess[x+2][y] == cur && chess[x-2][y] == cur && chess[x+3][y] == cur) ||(chess[x-2][y] == cur && chess[x-1][y] == cur && chess[x+1][y] == cur && chess[x-3][y] == cur && chess[x+2][y] == cur) ||  (chess[x-3][y] == cur && chess[x-2][y] == cur && chess[x-1][y] == cur && chess[x-4][y] == cur && chess[x+1][y] == cur)) {
+			longBan++;
+		}
+		if ((chess[x][y+1] == cur && chess[x][y+2] == cur && chess[x][y+3] == cur && chess[x][y-1] == cur && chess[x][y+4] == cur)|| (chess[x][y-1] == cur && chess[x][y+1] == cur && chess[x][y+2] == cur && chess[x][y-2] == cur && chess[x][y+3] == cur) ||(chess[x][y-2] == cur && chess[x][y-1] == cur && chess[x][y+1] == cur && chess[x][y-3] == cur && chess[x][y+2] == cur) ||  (chess[x][y-3] == cur && chess[x][y-2] == cur && chess[x][y-1] == cur && chess[x][y-4] == cur && chess[x][y+1] == cur)) {
+			longBan++;
+		}
+		if ((chess[x+1][y+1] == cur && chess[x+2][y+2] == cur && chess[x+3][y+3] == cur && chess[x-1][y-1] == cur && chess[x+4][y+4] == cur)|| (chess[x-1][y-1] == cur && chess[x+1][y+1] == cur && chess[x+2][y+2] == cur && chess[x-2][y-2] == cur && chess[x+3][y+3] == cur) ||(chess[x-2][y-2] == cur && chess[x-1][y-1] == cur && chess[x+1][y+1] == cur && chess[x-3][y-3] == cur && chess[x+2][y+2] == cur) ||  (chess[x-3][y-3] == cur && chess[x-2][y-2] == cur && chess[x-1][y-1] == cur && chess[x-4][y-4] == cur && chess[x+1][y+1] == cur)) {
+			longBan++;
+		}
+		if ((chess[x+1][y-1] == cur && chess[x+2][y-2] == cur && chess[x+3][y-3] == cur && chess[x-1][y+1] == cur && chess[x+4][y-4] == cur)|| (chess[x-1][y+1] == cur && chess[x+1][y-1] == cur && chess[x+2][y-2] == cur && chess[x-2][y+2] == cur && chess[x+3][y-3] == cur) ||(chess[x-2][y+2] == cur && chess[x-1][y+1] == cur && chess[x+1][y-1] == cur && chess[x-3][y+3] == cur && chess[x+2][y-2] == cur) ||  (chess[x-3][y+3] == cur && chess[x-2][y+2] == cur && chess[x-1][y+1] == cur && chess[x-4][y+4] == cur && chess[x+1][y-1] == cur)) {
+			longBan++;
+		}
+		int Ban = 0;
+		Ban = longBan + threeBan + fourBan;
+		if (Ban >= 2){
+			return true;
+		} else {
+			return false; 
+		}
+		 
+	}
+	
+	
 	/**
 	 * 判断胜负，对棋盘四个方向扫描连子数 
 	 * @param x 坐标x
