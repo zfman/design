@@ -9,32 +9,32 @@ import myutil.Protocol;
 import myutil.Result;
 
 /**
- * ·şÎñÆ÷¶ËÏß³Ì
- * ¸ºÔğÓë¿Í»§¶ËÍ¨ĞÅ
+ * æœåŠ¡å™¨ç«¯çº¿ç¨‹
+ * è´Ÿè´£ä¸å®¢æˆ·ç«¯é€šä¿¡
  * @author Administrator
  *
  */
 public class ServerThread implements Runnable{
-	//Ì×½Ó×Ö
+	//å¥—æ¥å­—
 	public Socket socket;
 	
-	//ÊäÈë¡¢Êä³öÁ÷
+	//è¾“å…¥ã€è¾“å‡ºæµ
 	public DataInputStream dis=null;
 	public DataOutputStream dos=null;
 	
-	//ÓÃ»§êÇ³Æ
+	//ç”¨æˆ·æ˜µç§°
 	public String userName=null;
 	
-	//ÓÃ»§ÅäÖÃĞÅÏ¢µÄMap
+	//ç”¨æˆ·é…ç½®ä¿¡æ¯çš„Map
 	public Map<String, Object> thisMap=null;
 	
-	//±êÖ¾Ïß³ÌÊÇ·ñÉú´æ
+	//æ ‡å¿—çº¿ç¨‹æ˜¯å¦ç”Ÿå­˜
 	public boolean isLive=true;
 	
 	/**
-	 * ¹¹Ôì·şÎñÆ÷¶ËÏß³ÌÊµÌå
-	 * ³õÊ¼»¯ÊäÈë¡¢Êä³öÁ÷
-	 * @param socket ¿Í»§¶ËÌ×½Ó×Ö
+	 * æ„é€ æœåŠ¡å™¨ç«¯çº¿ç¨‹å®ä½“
+	 * åˆå§‹åŒ–è¾“å…¥ã€è¾“å‡ºæµ
+	 * @param socket å®¢æˆ·ç«¯å¥—æ¥å­—
 	 */
 	public ServerThread(Socket socket){
 		this.socket=socket;
@@ -47,58 +47,101 @@ public class ServerThread implements Runnable{
 	}
 	
 	/**
-	 * Ïß³ÌÌå
+	 * çº¿ç¨‹ä½“
 	 */
 	public void run() {
 		while(isLive){
-			//½âÎöÏûÏ¢
+			//è§£ææ¶ˆæ¯
 			Result result = null;
 			result = Protocol.getResult(dis);
 			if(result!=null)
-			//°´ÀàĞÍ´¦Àí
+			//æŒ‰ç±»å‹å¤„ç†
 			handleType(result.getType(),result.getData());
 		}
 	}
 
+	private String getPrivateChatReceiver(String message){
+		String receiver=null;
+		if(message!=null){
+			if(message.startsWith("@")){
+				int spaceIndex=message.indexOf(" ");
+				receiver=message.substring(1,spaceIndex);
+			}
+		}
+		return receiver;
+	}
+
+	private void groupChat(String message){
+		//éå†é›†åˆï¼Œè·å–è¾“å‡ºæµ
+		//å‘æ‰€æœ‰ç”¨æˆ·è½¬å‘æ¶ˆæ¯
+		for(int i=0;i<Server.clients.size();i++){
+			System.out.println("message:"+message);
+			DataOutputStream  dos2=(DataOutputStream) Server.clients.get(i).get("dos");
+			Protocol.send(Protocol.TYPE_TEXT,(userName+"è¯´ï¼š"+message).getBytes(),dos2);
+		}
+	}
+
+	private void privateChat(String message,String receiver){
+		//éå†é›†åˆï¼Œè·å–è¾“å‡ºæµ
+		//å‘receiverè½¬å‘æ¶ˆæ¯
+		for(int i=0;i<Server.clients.size();i++){
+			String tmpUsername= (String) Server.clients.get(i).get("user");
+			if(receiver.equals(tmpUsername)){
+				DataOutputStream  dos2=(DataOutputStream) Server.clients.get(i).get("dos");
+				Protocol.send(Protocol.TYPE_TEXT,(userName+"å¯¹ä½ è¯´ï¼š"+message).getBytes(),dos2);
+			}
+		}
+
+		//æŠŠæ¶ˆæ¯ä¹Ÿç»™è‡ªå·±è½¬å‘ä¸€ä¸‹ï¼Œæ˜¾ç¤ºåœ¨å‘é€è€…è‡ªå·±çš„èŠå¤©å†…å®¹ä¸­
+		Protocol.send(Protocol.TYPE_TEXT,("ä½ å¯¹ã€"+receiver+"ã€‘è¯´ï¼š"+message).getBytes(),dos);
+	}
+
 	/**
-	 * ¸ù¾İÏûÏ¢ÀàĞÍÖ´ĞĞÏàÓ¦²Ù×÷
-	 * @param type ÀàĞÍ
-	 * @param data ÏûÏ¢ÄÚÈİ
+	 * æ ¹æ®æ¶ˆæ¯ç±»å‹æ‰§è¡Œç›¸åº”æ“ä½œ
+	 * @param type ç±»å‹
+	 * @param data æ¶ˆæ¯å†…å®¹
 	 */
 	public void handleType(int type, byte[] data) {
 		switch (type) {
 		case 1:
-			//±éÀú¼¯ºÏ£¬»ñÈ¡Êä³öÁ÷
-			//ÏòËùÓĞÓÃ»§×ª·¢ÏûÏ¢
-			for(int i=0;i<Server.clients.size();i++){
-				System.out.println("message:"+new String(data));
-				DataOutputStream  dos2=(DataOutputStream) Server.clients.get(i).get("dos");
-				String msg=new String(data);
-				Protocol.send(Protocol.TYPE_TEXT,(userName+"Ëµ£º"+msg).getBytes(),dos2);
+			String message=new String(data);
+			String receiver=null;
+			if(message.startsWith("@")){
+				int spaceIndex=message.indexOf(" ");
+				receiver=message.substring(1,spaceIndex);
+				message=message.substring(spaceIndex+1);
+				System.out.println("message="+message+", receiver:"+receiver);
+			}
+			//ç§èŠ
+			if(receiver!=null){
+				privateChat(message,receiver);
+			}
+			else{//ç¾¤èŠ
+				groupChat(message);
 			}
 			break;
 		case 2:
-			//ÉèÖÃÅäÖÃĞÅÏ¢²¢Ìí¼ÓÖÁ·şÎñÆ÷¶ËµÄ¼¯ºÏÖĞ
+			//è®¾ç½®é…ç½®ä¿¡æ¯å¹¶æ·»åŠ è‡³æœåŠ¡å™¨ç«¯çš„é›†åˆä¸­
 			userName=new String(data);
 			Map<String,Object> map=new HashMap<>();
 			map.put("dos",dos);
 			map.put("user",userName);
 			Server.clients.add(map);
 			
-			//Í¨ÖªËùÓĞÓÃ»§ÓĞÈËµÇÂ½ÁÄÌìÊÒ
+			//é€šçŸ¥æ‰€æœ‰ç”¨æˆ·æœ‰äººç™»é™†èŠå¤©å®¤
 			thisMap=map;
 			for(int i=0;i<Server.clients.size();i++){
 				DataOutputStream  dos2=(DataOutputStream) Server.clients.get(i).get("dos");
-				Protocol.send(Protocol.TYPE_LOADSUCCESS, ("   ÏµÍ³£º"+userName+"½øÈëÁÄÌìÊÒ").getBytes(), dos2);
+				Protocol.send(Protocol.TYPE_LOADSUCCESS, ("   ç³»ç»Ÿï¼š"+userName+"è¿›å…¥èŠå¤©å®¤").getBytes(), dos2);
 			}
 			break;
 		case 3:
-			//¸æÖªËùÓĞÓÃ»§ÓĞÈËÒªÍË³öÁÄÌìÊÒ
+			//å‘ŠçŸ¥æ‰€æœ‰ç”¨æˆ·æœ‰äººè¦é€€å‡ºèŠå¤©å®¤
 			for(int i=0;i<Server.clients.size();i++){
 				DataOutputStream  dos2=(DataOutputStream) Server.clients.get(i).get("dos");
-				Protocol.send(Protocol.TYPE_LOGOUTSUCCESS, ("   ÏµÍ³£º"+userName+"ÍË³öÁÄÌìÊÒ").getBytes(), dos2);
+				Protocol.send(Protocol.TYPE_LOGOUTSUCCESS, ("   ç³»ç»Ÿï¼š"+userName+"é€€å‡ºèŠå¤©å®¤").getBytes(), dos2);
 			}
-			//É¾³ı¼¯ºÏÖĞ±£´æµÄ¸Ã¿Í»§¶ËĞÅÏ¢
+			//åˆ é™¤é›†åˆä¸­ä¿å­˜çš„è¯¥å®¢æˆ·ç«¯ä¿¡æ¯
 			Server.clients.remove(thisMap);
 			isLive=false;
 			break;
